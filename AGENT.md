@@ -70,7 +70,7 @@ how to work, and what is done.
 
 ### 2 — Tools ⬜
 
-- [ ] 2.1 `src/config.py` — every constant, typed
+- [x] 2.1 `src/config.py` — every constant, typed
 - [ ] 2.2 `src/clients/protocols.py` — read and write interfaces separated
 - [ ] 2.3 `src/clients/glpi.py`
 - [ ] 2.4 `src/clients/logstore.py`

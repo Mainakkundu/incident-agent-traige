@@ -1,0 +1,470 @@
+# Golden cases for the incident triage agent.
+#
+# Each case is an alert the agent receives, plus the answer we know is correct.
+# Written BEFORE the agent, so the agent is built to pass a test it can't see.
+#
+# Fields:
+#   id                 stable identifier
+#   alert              what Alertmanager fires (the agent's only input)
+#   expected_root      the service that is actually at fault
+#   expected_chain     dependency path from root cause to the alerting service
+#   expected_evidence  substrings that must appear in the agent's cited logs
+#   must_not_conclude  wrong answers that look plausible (the trap)
+#   difficulty         easy | medium | hard
+#   tags               for slicing failures later
+
+cases:
+
+  # ── Pattern 1: postgres connection exhaustion ────────────────
+  - id: gld_001
+    alert:
+      service: payment-api
+      condition: error_rate
+      value: "12%"
+      baseline: "0.3%"
+    expected_root: postgres-main
+    expected_chain: [postgres-main, auth-service, payment-api]
+    expected_evidence:
+      - "too many clients"
+      - "connection pool exhausted"
+    must_not_conclude: [payment-api, auth-service]
+    difficulty: medium
+    tags: [two_hop, cascading, victim_alerts]
+
+  - id: gld_002
+    alert:
+      service: auth-service
+      condition: error_rate
+      value: "31%"
+      baseline: "0.1%"
+    expected_root: postgres-main
+    expected_chain: [postgres-main, auth-service]
+    expected_evidence:
+      - "max_connections reached"
+    must_not_conclude: [auth-service]
+    difficulty: easy
+    tags: [one_hop, cascading]
+
+  - id: gld_003
+    alert:
+      service: api-gateway
+      condition: upstream_5xx
+      value: "9%"
+      baseline: "0.2%"
+    expected_root: postgres-main
+    expected_chain: [postgres-main, auth-service, payment-api, api-gateway]
+    expected_evidence:
+      - "too many clients"
+      - "upstream auth-service timeout"
+    must_not_conclude: [api-gateway, payment-api]
+    difficulty: hard
+    tags: [three_hop, cascading, deep_chain]
+
+  - id: gld_004
+    alert:
+      service: postgres-main
+      condition: connection_count
+      value: "100"
+      baseline: "40"
+    expected_root: postgres-main
+    expected_chain: [postgres-main]
+    expected_evidence:
+      - "connections in use"
+    must_not_conclude: [auth-service, payment-api]
+    difficulty: easy
+    tags: [zero_hop, root_alerts_directly]
+
+  # ── Pattern 2: auth-service OOM ──────────────────────────────
+  - id: gld_005
+    alert:
+      service: payment-api
+      condition: error_rate
+      value: "18%"
+      baseline: "0.3%"
+    expected_root: auth-service
+    expected_chain: [auth-service, payment-api]
+    expected_evidence:
+      - "OutOfMemoryError"
+      - "connection refused"
+    must_not_conclude: [payment-api, postgres-main]
+    difficulty: medium
+    tags: [one_hop, oom, stops_short_of_db]
+
+  - id: gld_006
+    alert:
+      service: auth-service
+      condition: pod_restart
+      value: "3 in 10m"
+      baseline: "0"
+    expected_root: auth-service
+    expected_chain: [auth-service]
+    expected_evidence:
+      - "heap usage"
+      - "OutOfMemoryError"
+    must_not_conclude: [postgres-main, redis-cache]
+    difficulty: easy
+    tags: [zero_hop, oom]
+
+  - id: gld_007
+    alert:
+      service: api-gateway
+      condition: upstream_5xx
+      value: "15%"
+      baseline: "0.2%"
+    expected_root: auth-service
+    expected_chain: [auth-service, payment-api, api-gateway]
+    expected_evidence:
+      - "connection refused"
+      - "auth unavailable"
+    must_not_conclude: [api-gateway, payment-api]
+    difficulty: hard
+    tags: [two_hop, oom, deep_chain]
+
+  # ── Pattern 3: deploy regression ─────────────────────────────
+  - id: gld_008
+    alert:
+      service: payment-api
+      condition: error_rate
+      value: "14%"
+      baseline: "0.3%"
+    expected_root: payment-api
+    expected_chain: [payment-api]
+    expected_evidence:
+      - "NullPointerException"
+      - "version=v1.4.2"
+    must_not_conclude: [auth-service, postgres-main]
+    difficulty: medium
+    tags: [zero_hop, deploy, must_check_deploys]
+
+  - id: gld_009
+    alert:
+      service: api-gateway
+      condition: upstream_5xx
+      value: "11%"
+      baseline: "0.2%"
+    expected_root: payment-api
+    expected_chain: [payment-api, api-gateway]
+    expected_evidence:
+      - "NullPointerException"
+      - "RefundHandler"
+    must_not_conclude: [api-gateway, auth-service]
+    difficulty: medium
+    tags: [one_hop, deploy]
+
+  # ── Pattern 4: redis eviction storm ──────────────────────────
+  - id: gld_010
+    alert:
+      service: auth-service
+      condition: token_issuance_rate
+      value: "8x baseline"
+      baseline: "1x"
+    expected_root: redis-cache
+    expected_chain: [redis-cache, auth-service]
+    expected_evidence:
+      - "evicted"
+      - "session lookup miss rate"
+    must_not_conclude: [auth-service, postgres-main]
+    difficulty: hard
+    tags: [one_hop, subtle, no_errors_only_warns]
+
+  - id: gld_011
+    alert:
+      service: redis-cache
+      condition: memory_used_pct
+      value: "97%"
+      baseline: "60%"
+    expected_root: redis-cache
+    expected_chain: [redis-cache]
+    expected_evidence:
+      - "approaching maxmemory"
+    must_not_conclude: [auth-service]
+    difficulty: easy
+    tags: [zero_hop]
+
+  - id: gld_012
+    alert:
+      service: postgres-main
+      condition: connection_count
+      value: "78"
+      baseline: "40"
+    expected_root: redis-cache
+    expected_chain: [redis-cache, auth-service, postgres-main]
+    expected_evidence:
+      - "evicted"
+      - "token issuance rate"
+    must_not_conclude: [postgres-main, auth-service]
+    difficulty: hard
+    tags: [two_hop, counterintuitive, db_is_victim_not_cause]
+
+  # ── Pattern 5: kafka consumer lag ────────────────────────────
+  - id: gld_013
+    alert:
+      service: notification-svc
+      condition: delivery_latency_p99
+      value: "14m"
+      baseline: "8s"
+    expected_root: notification-svc
+    expected_chain: [notification-svc]
+    expected_evidence:
+      - "sms provider call exceeded"
+      - "consumer poll interval exceeded"
+    must_not_conclude: [kafka-broker]
+    difficulty: hard
+    tags: [zero_hop, trap_blames_infra, slow_external_dep]
+
+  - id: gld_014
+    alert:
+      service: kafka-broker
+      condition: consumer_lag
+      value: "18420"
+      baseline: "<100"
+    expected_root: notification-svc
+    expected_chain: [notification-svc, kafka-broker]
+    expected_evidence:
+      - "sms provider call exceeded"
+      - "rebalance"
+    must_not_conclude: [kafka-broker]
+    difficulty: hard
+    tags: [one_hop, reverse_direction, consumer_not_broker]
+
+  # ── Pattern 6: replica lag ───────────────────────────────────
+  - id: gld_015
+    alert:
+      service: user-service
+      condition: stale_read_rate
+      value: "22%"
+      baseline: "0%"
+    expected_root: postgres-replica
+    expected_chain: [postgres-replica, user-service]
+    expected_evidence:
+      - "replication lag"
+      - "WAL replay paused"
+    must_not_conclude: [user-service, postgres-main]
+    difficulty: medium
+    tags: [one_hop, replica_not_primary]
+
+  - id: gld_016
+    alert:
+      service: postgres-replica
+      condition: replication_lag
+      value: "142s"
+      baseline: "<1s"
+    expected_root: postgres-replica
+    expected_chain: [postgres-replica]
+    expected_evidence:
+      - "conflict with running query"
+    must_not_conclude: [postgres-main]
+    difficulty: easy
+    tags: [zero_hop]
+
+  # ── Pattern 7: s3 throttling ─────────────────────────────────
+  - id: gld_017
+    alert:
+      service: notification-svc
+      condition: error_rate
+      value: "7%"
+      baseline: "0.1%"
+    expected_root: s3-receipts
+    expected_chain: [s3-receipts, notification-svc]
+    expected_evidence:
+      - "SlowDown"
+      - "receipt attachment unavailable"
+    must_not_conclude: [notification-svc, kafka-broker]
+    difficulty: medium
+    tags: [one_hop, external_service]
+
+  - id: gld_018
+    alert:
+      service: s3-receipts
+      condition: error_rate
+      value: "23%"
+      baseline: "0%"
+    expected_root: s3-receipts
+    expected_chain: [s3-receipts]
+    expected_evidence:
+      - "throttled"
+    must_not_conclude: [notification-svc]
+    difficulty: easy
+    tags: [zero_hop]
+
+  # ── Clean cases: correct answer is "nothing is wrong" ────────
+  # An agent that always finds something is worse than no agent.
+  - id: gld_019
+    alert:
+      service: payment-api
+      condition: error_rate
+      value: "0.4%"
+      baseline: "0.3%"
+    expected_root: null
+    expected_chain: []
+    expected_evidence: []
+    must_not_conclude: [postgres-main, auth-service, payment-api]
+    difficulty: medium
+    tags: [clean, false_positive, must_close_as_noise]
+
+  - id: gld_020
+    alert:
+      service: checkout-web
+      condition: latency_p99
+      value: "240ms"
+      baseline: "220ms"
+    expected_root: null
+    expected_chain: []
+    expected_evidence: []
+    must_not_conclude: [api-gateway, payment-api]
+    difficulty: medium
+    tags: [clean, false_positive, within_normal_variance]
+
+  - id: gld_021
+    alert:
+      service: user-service
+      condition: error_rate
+      value: "0.2%"
+      baseline: "0.1%"
+    expected_root: null
+    expected_chain: []
+    expected_evidence: []
+    must_not_conclude: [postgres-replica, postgres-main]
+    difficulty: hard
+    tags: [clean, false_positive, replica_has_old_incidents]
+
+  - id: gld_022
+    alert:
+      service: redis-cache
+      condition: memory_used_pct
+      value: "64%"
+      baseline: "60%"
+    expected_root: null
+    expected_chain: []
+    expected_evidence: []
+    must_not_conclude: [redis-cache, auth-service]
+    difficulty: hard
+    tags: [clean, false_positive, near_a_real_signature]
+
+  - id: gld_023
+    alert:
+      service: kafka-broker
+      condition: consumer_lag
+      value: "140"
+      baseline: "<100"
+    expected_root: null
+    expected_chain: []
+    expected_evidence: []
+    must_not_conclude: [notification-svc, kafka-broker]
+    difficulty: hard
+    tags: [clean, false_positive, small_lag_is_normal]
+
+  # ── Ambiguity: two things wrong at once ──────────────────────
+  - id: gld_024
+    alert:
+      service: payment-api
+      condition: error_rate
+      value: "19%"
+      baseline: "0.3%"
+    expected_root: postgres-main
+    expected_chain: [postgres-main, auth-service, payment-api]
+    expected_evidence:
+      - "too many clients"
+    must_not_conclude: [s3-receipts]
+    difficulty: hard
+    tags: [concurrent_incidents, must_pick_the_relevant_one]
+    note: >
+      An unrelated s3 throttling incident is in flight at the same time.
+      The agent must not conflate them — s3 is not in payment-api's
+      dependency path.
+
+  - id: gld_025
+    alert:
+      service: notification-svc
+      condition: error_rate
+      value: "12%"
+      baseline: "0.1%"
+    expected_root: s3-receipts
+    expected_chain: [s3-receipts, notification-svc]
+    expected_evidence:
+      - "SlowDown"
+    must_not_conclude: [kafka-broker, postgres-main]
+    difficulty: hard
+    tags: [concurrent_incidents, two_upstreams_one_guilty]
+    note: >
+      notification-svc depends on both kafka-broker and s3-receipts.
+      Kafka is healthy. The agent must check both and rule one out.
+
+  # ── Insufficient evidence: correct answer is "escalate" ──────
+  - id: gld_026
+    alert:
+      service: ledger-service
+      condition: error_rate
+      value: "8%"
+      baseline: "0.2%"
+    expected_root: inconclusive
+    expected_chain: []
+    expected_evidence: []
+    must_not_conclude: [postgres-main]
+    difficulty: hard
+    tags: [inconclusive, must_escalate, no_matching_logs]
+    note: >
+      No logs explain this. The correct behaviour is low confidence and
+      escalation to a human, not a confident guess at postgres-main
+      just because it is the only dependency.
+
+  - id: gld_027
+    alert:
+      service: checkout-web
+      condition: error_rate
+      value: "6%"
+      baseline: "0.1%"
+    expected_root: inconclusive
+    expected_chain: []
+    expected_evidence: []
+    must_not_conclude: [api-gateway, payment-api]
+    difficulty: hard
+    tags: [inconclusive, must_escalate]
+
+  # ── Efficiency: shallow cases the agent must not over-explore ─
+  - id: gld_028
+    alert:
+      service: postgres-main
+      condition: disk_used_pct
+      value: "91%"
+      baseline: "60%"
+    expected_root: postgres-main
+    expected_chain: [postgres-main]
+    expected_evidence: []
+    must_not_conclude: [auth-service, ledger-service]
+    difficulty: easy
+    tags: [zero_hop, efficiency, max_4_tool_calls]
+    note: >
+      postgres-main has no dependencies. Walking the graph downward into
+      its dependents is wasted work. Fails on tool_calls > 4.
+
+  - id: gld_029
+    alert:
+      service: s3-receipts
+      condition: latency_p99
+      value: "3.2s"
+      baseline: "180ms"
+    expected_root: s3-receipts
+    expected_chain: [s3-receipts]
+    expected_evidence: []
+    must_not_conclude: [notification-svc]
+    difficulty: easy
+    tags: [zero_hop, efficiency, leaf_node]
+
+  - id: gld_030
+    alert:
+      service: payment-api
+      condition: error_rate
+      value: "22%"
+      baseline: "0.3%"
+    expected_root: auth-service
+    expected_chain: [auth-service, payment-api]
+    expected_evidence:
+      - "connection refused"
+    must_not_conclude: [postgres-main, redis-cache]
+    difficulty: hard
+    tags: [must_stop_walking, no_deeper_cause]
+    note: >
+      auth-service is down, but postgres-main is healthy. The agent must
+      stop at auth-service rather than continuing down the graph and
+      blaming the database out of habit.

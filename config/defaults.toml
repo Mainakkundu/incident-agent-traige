@@ -1,0 +1,38 @@
+environment = "local"
+
+[glpi]
+url = "http://localhost:8080/api.php/v1"
+db_host = "localhost"
+db_port = 3306
+db_name = "glpi"
+db_user = "glpi"
+
+[postgres]
+dsn = "postgresql://agent:agent@localhost:5432/incidents"
+
+[phoenix]
+endpoint = "http://localhost:6006"
+
+[otel]
+exporter_otlp_endpoint = "http://localhost:4317"
+
+[http]
+timeout_seconds = 30.0
+
+[tools]
+log_search_limit = 100
+vector_search_limit = 5
+recent_deploys_hours = 72
+error_rate_window_minutes = 15
+metric_window_minutes = 15
+
+[agent]
+max_steps = 15
+auto_write_confidence = 0.8
+approval_token_ttl_seconds = 900
+
+[api]
+webhook_response_timeout_ms = 200
+
+[tracing]
+sample_rate = 1.0

@@ -1,0 +1,5 @@
+arize-phoenix-otel
+groq
+httpx
+psycopg[binary]
+sentence-transformers

@@ -35,8 +35,8 @@ how to work, and what is done.
 ```
 0 Infra          ██████  done
 1 Data           ██████  done
-2 Tools          ░░░░░░  ← here
-3 Agent          ░░░░░░
+2 Tools          ██████  done
+3 Agent          ░░░░░░  ← here
 4 Observability  ░░░░░░
 5 API + trigger  ░░░░░░
 6 Evaluation     ░░░░░░
@@ -68,16 +68,16 @@ how to work, and what is done.
 - [x] 30 goldens: 18 real / 5 clean / 2 concurrent / 2 inconclusive /
       3 efficiency
 
-### 2 — Tools ⬜
+### 2 — Tools ✅
 
 - [x] 2.1 `src/config.py` — every constant, typed
-- [ ] 2.2 `src/clients/protocols.py` — read and write interfaces separated
-- [ ] 2.3 `src/clients/glpi.py`
-- [ ] 2.4 `src/clients/logstore.py`
-- [ ] 2.5 7 runbooks + 5 decoys, embedded
-- [ ] 2.6 `src/mcp/observability.py` — 4 tools
-- [ ] 2.7 `src/mcp/itsm.py` — 7 tools, writes assert a token
-- [ ] 2.8 All 11 tested standalone
+- [x] 2.2 `src/clients/protocols.py` — read and write interfaces separated
+- [x] 2.3 `src/clients/glpi.py`
+- [x] 2.4 `src/clients/logstore.py`
+- [x] 2.5 7 runbooks + 5 decoys, embedded
+- [x] 2.6 `src/mcp/observability.py` — 4 tools
+- [x] 2.7 `src/mcp/itsm.py` — 7 tools, writes assert a token
+- [x] 2.8 All 11 tested standalone
 
 ### 3 — Agent ⬜
 
@@ -123,7 +123,4 @@ how to work, and what is done.
 
 ---
 
-**Next: 2.1 `src/config.py`.**
-
-Move `seed_cmdb.py` and `generate_logs.py` to `scripts/`. Delete
-`load_logs.py` — dead, record why in `decisions.md`.
+**Next: 3.1 `state.py` — must include `services_seen` for E3.**

@@ -35,15 +35,22 @@ class Settings:
     glpi_db_password: str | None
     glpi_app_token: str | None
     glpi_user_token: str | None
+    glpi_list_page_size: int
     postgres_dsn: str
     phoenix_endpoint: str
+    phoenix_project_name: str
     otel_exporter_otlp_endpoint: str
+    groq_api_key: str | None
+    groq_base_url: str
+    groq_model: str
     http_timeout_seconds: float
     log_search_limit: int
     vector_search_limit: int
     recent_deploys_hours: int
     error_rate_window_minutes: int
     metric_window_minutes: int
+    embedding_dimensions: int
+    embedding_model: str
     agent_max_steps: int
     auto_write_confidence: float
     approval_token_ttl_seconds: int
@@ -174,6 +181,11 @@ def load_settings(
         glpi_db_password=get_optional_string("GLPI_DB_PASSWORD", env_file_values),
         glpi_app_token=get_optional_string("GLPI_APP_TOKEN", env_file_values),
         glpi_user_token=get_optional_string("GLPI_USER_TOKEN", env_file_values),
+        glpi_list_page_size=get_int(
+            "GLPI_LIST_PAGE_SIZE",
+            require_config_value(config, ("glpi", "list_page_size")),
+            env_file_values,
+        ),
         postgres_dsn=get_string(
             "DB_DSN",
             require_config_value(config, ("postgres", "dsn")),
@@ -184,9 +196,25 @@ def load_settings(
             require_config_value(config, ("phoenix", "endpoint")),
             env_file_values,
         ),
+        phoenix_project_name=get_string(
+            "PHOENIX_PROJECT_NAME",
+            require_config_value(config, ("phoenix", "project_name")),
+            env_file_values,
+        ),
         otel_exporter_otlp_endpoint=get_string(
             "OTEL_EXPORTER_OTLP_ENDPOINT",
             require_config_value(config, ("otel", "exporter_otlp_endpoint")),
+            env_file_values,
+        ),
+        groq_api_key=get_optional_string("GROQ_API_KEY", env_file_values),
+        groq_base_url=get_string(
+            "GROQ_BASE_URL",
+            require_config_value(config, ("groq", "base_url")),
+            env_file_values,
+        ),
+        groq_model=get_string(
+            "GROQ_MODEL",
+            require_config_value(config, ("groq", "model")),
             env_file_values,
         ),
         http_timeout_seconds=get_float(
@@ -217,6 +245,16 @@ def load_settings(
         metric_window_minutes=get_int(
             "METRIC_WINDOW_MINUTES",
             require_config_value(config, ("tools", "metric_window_minutes")),
+            env_file_values,
+        ),
+        embedding_dimensions=get_int(
+            "EMBEDDING_DIMENSIONS",
+            require_config_value(config, ("tools", "embedding_dimensions")),
+            env_file_values,
+        ),
+        embedding_model=get_string(
+            "EMBEDDING_MODEL",
+            require_config_value(config, ("tools", "embedding_model")),
             env_file_values,
         ),
         agent_max_steps=get_int(

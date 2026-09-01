@@ -27,6 +27,9 @@ class SettingsTests(unittest.TestCase):
         )
         self.assertEqual(settings.agent_max_steps, 15)
         self.assertEqual(settings.auto_write_confidence, 0.8)
+        self.assertEqual(settings.groq_model, "openai/gpt-oss-20b")
+        self.assertEqual(settings.groq_base_url, "https://api.groq.com")
+        self.assertIsNone(settings.groq_api_key)
 
     def test_load_settings_reads_env_file_values(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -38,6 +41,7 @@ class SettingsTests(unittest.TestCase):
                         "GLPI_DB_PORT=3307",
                         "HTTP_TIMEOUT_SECONDS=12.5",
                         "AUTO_WRITE_CONFIDENCE=0.91",
+                        "GROQ_API_KEY=test-secret",
                     )
                 ),
                 encoding="utf-8",
@@ -48,6 +52,7 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(settings.glpi_db_port, 3307)
         self.assertEqual(settings.http_timeout_seconds, 12.5)
         self.assertEqual(settings.auto_write_confidence, 0.91)
+        self.assertEqual(settings.groq_api_key, "test-secret")
 
     def test_load_settings_reads_alternate_config_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -63,6 +68,10 @@ class SettingsTests(unittest.TestCase):
             settings = load_settings(env_file, config_file)
 
         self.assertEqual(settings.agent_max_steps, 9)
+        self.assertEqual(
+            settings.embedding_model,
+            "sentence-transformers/all-mpnet-base-v2",
+        )
 
     def test_process_environment_overrides_env_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

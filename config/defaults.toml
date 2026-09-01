@@ -6,15 +6,21 @@ db_host = "localhost"
 db_port = 3306
 db_name = "glpi"
 db_user = "glpi"
+list_page_size = 1000
 
 [postgres]
 dsn = "postgresql://agent:agent@localhost:5432/incidents"
 
 [phoenix]
 endpoint = "http://localhost:6006"
+project_name = "incident-triage-agent-groq-smoke"
 
 [otel]
 exporter_otlp_endpoint = "http://localhost:4317"
+
+[groq]
+base_url = "https://api.groq.com"
+model = "openai/gpt-oss-20b"
 
 [http]
 timeout_seconds = 30.0
@@ -25,6 +31,8 @@ vector_search_limit = 5
 recent_deploys_hours = 72
 error_rate_window_minutes = 15
 metric_window_minutes = 15
+embedding_dimensions = 768
+embedding_model = "sentence-transformers/all-mpnet-base-v2"
 
 [agent]
 max_steps = 15

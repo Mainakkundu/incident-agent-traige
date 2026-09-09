@@ -1,5 +1,7 @@
 arize-phoenix-otel
 groq
 httpx
+langchain-core
+langgraph
 psycopg[binary]
 sentence-transformers

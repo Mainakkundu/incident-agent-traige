@@ -68,7 +68,7 @@ how to work, and what is done.
 - [x] 30 goldens: 18 real / 5 clean / 2 concurrent / 2 inconclusive /
       3 efficiency
 
-### 2 — Tools ✅
+### 2 — Tools ⬜
 
 - [x] 2.1 `src/config.py` — every constant, typed
 - [x] 2.2 `src/clients/protocols.py` — read and write interfaces separated
@@ -78,12 +78,13 @@ how to work, and what is done.
 - [x] 2.6 `src/mcp/observability.py` — 4 tools
 - [x] 2.7 `src/mcp/itsm.py` — 7 tools, writes assert a token
 - [x] 2.8 All 11 tested standalone
+- [ ] 2.9 MCP server entrypoints + client adapter — host both tool sets
 
 ### 3 — Agent ⬜
 
-- [ ] 3.1 `state.py` — must include `services_seen` for E3
-- [ ] 3.2 `prompts.py` — method, not answers; no root-cause hints
-- [ ] 3.3 `graph.py` — nodes, edges, cap in `should_continue`
+- [x] 3.1 `state.py` — must include `services_seen` for E3
+- [x] 3.2 `prompts.py` — method, not answers; no root-cause hints
+- [x] 3.3 `graph.py` — nodes, edges, cap in `should_continue`
 - [ ] 3.4 `gate.py` — confidence, token issuance, escalation
 - [ ] 3.5 HITL via `interrupt_before`
 - [ ] 3.6 gld_001 end to end
@@ -123,4 +124,4 @@ how to work, and what is done.
 
 ---
 
-**Next: 3.1 `state.py` — must include `services_seen` for E3.**
+**Next: 2.9 MCP server entrypoints + client adapter — host both tool sets.**

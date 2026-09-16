@@ -78,7 +78,7 @@ how to work, and what is done.
 - [x] 2.6 `src/mcp/observability.py` — 4 tools
 - [x] 2.7 `src/mcp/itsm.py` — 7 tools, writes assert a token
 - [x] 2.8 All 11 tested standalone
-- [ ] 2.9 MCP server entrypoints + client adapter — host both tool sets
+- [x] 2.9 MCP server entrypoints + client adapter — host both tool sets
 
 ### 3 — Agent ⬜
 
@@ -124,4 +124,4 @@ how to work, and what is done.
 
 ---
 
-**Next: 2.9 MCP server entrypoints + client adapter — host both tool sets.**
+**Next: 3.4 `gate.py` — confidence, token issuance, escalation.**

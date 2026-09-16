@@ -3,5 +3,6 @@ groq
 httpx
 langchain-core
 langgraph
+mcp[cli]
 psycopg[binary]
 sentence-transformers

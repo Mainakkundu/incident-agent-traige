@@ -18,6 +18,7 @@ class TriageState(TypedDict):
     llm_calls: int
     services_seen: Annotated[list[str], operator.add]
     approval_token: str | None
+    gate_decision: dict[str, Any] | None
 
 
 class TriageStateUpdate(TypedDict, total=False):
@@ -27,6 +28,7 @@ class TriageStateUpdate(TypedDict, total=False):
     llm_calls: int
     services_seen: list[str]
     approval_token: str | None
+    gate_decision: dict[str, Any] | None
 
 
 def initial_triage_state(
@@ -39,6 +41,7 @@ def initial_triage_state(
         "llm_calls": 0,
         "services_seen": [],
         "approval_token": approval_token,
+        "gate_decision": None,
     }
 
 

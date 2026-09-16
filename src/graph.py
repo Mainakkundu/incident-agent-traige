@@ -6,6 +6,7 @@ from functools import partial
 from typing import Any, Literal, Protocol, Sequence
 
 from src.config import Settings
+from src.gate import gate_state
 from src.state import TriageState, TriageStateUpdate
 
 
@@ -53,9 +54,9 @@ def message_has_tool_calls(message: Any) -> bool:
     return False
 
 
-def gate_node(state: TriageState) -> TriageStateUpdate:
-    """Return no state changes until the confidence gate is implemented."""
-    return {}
+def gate_node(state: TriageState, settings: Settings) -> TriageStateUpdate:
+    """Apply the confidence gate to the final diagnosis."""
+    return gate_state(state, settings)
 
 
 def build_triage_graph(
@@ -77,7 +78,7 @@ def build_triage_graph(
     graph = StateGraph(TriageState)
     graph.add_node(SUPERVISOR_NODE, partial(supervisor_node, model=model))
     graph.add_node(TOOL_NODE, ToolNode(list(tools)))
-    graph.add_node(GATE_NODE, gate_node)
+    graph.add_node(GATE_NODE, partial(gate_node, settings=settings))
     graph.set_entry_point(SUPERVISOR_NODE)
     graph.add_conditional_edges(
         SUPERVISOR_NODE,

@@ -85,7 +85,7 @@ how to work, and what is done.
 - [x] 3.1 `state.py` — must include `services_seen` for E3
 - [x] 3.2 `prompts.py` — method, not answers; no root-cause hints
 - [x] 3.3 `graph.py` — nodes, edges, cap in `should_continue`
-- [ ] 3.4 `gate.py` — confidence, token issuance, escalation
+- [x] 3.4 `gate.py` — confidence, token issuance, escalation
 - [ ] 3.5 HITL via `interrupt_before`
 - [ ] 3.6 gld_001 end to end
 
@@ -124,4 +124,4 @@ how to work, and what is done.
 
 ---
 
-**Next: 3.4 `gate.py` — confidence, token issuance, escalation.**
+**Next: 3.5 HITL via `interrupt_before`.**

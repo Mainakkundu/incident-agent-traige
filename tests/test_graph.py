@@ -5,7 +5,6 @@ import unittest
 from src.graph import (
     GATE_NODE,
     TOOL_NODE,
-    gate_node,
     should_continue,
     supervisor_node,
 )
@@ -46,12 +45,6 @@ class GraphTests(unittest.TestCase):
         self.assertEqual(update["messages"], [FakeMessage(content="next")])
         self.assertEqual(update["llm_calls"], 3)
         self.assertEqual(model.messages, state["messages"])
-
-    def test_gate_node_is_placeholder_until_confidence_gate_step(self) -> None:
-        state = initial_triage_state()
-
-        self.assertEqual(gate_node(state), {})
-
 
 class FakeMessage:
     def __init__(

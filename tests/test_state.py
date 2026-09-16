@@ -23,6 +23,7 @@ class TriageStateTests(unittest.TestCase):
         self.assertEqual(state["llm_calls"], 0)
         self.assertEqual(state["services_seen"], [])
         self.assertEqual(state["approval_token"], "token-1")
+        self.assertIsNone(state["gate_decision"])
 
     def test_services_seen_has_add_reducer_for_e3(self) -> None:
         hints = get_type_hints(TriageState, include_extras=True)

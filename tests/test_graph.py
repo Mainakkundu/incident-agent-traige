@@ -3,10 +3,14 @@ from __future__ import annotations
 import unittest
 
 from src.graph import (
+    END_NODE,
     GATE_NODE,
     TOOL_NODE,
+    WRITE_NODE,
     should_continue,
+    should_write,
     supervisor_node,
+    write_node,
 )
 from src.state import initial_triage_state
 from tests.test_mcp_observability import make_settings
@@ -45,6 +49,21 @@ class GraphTests(unittest.TestCase):
         self.assertEqual(update["messages"], [FakeMessage(content="next")])
         self.assertEqual(update["llm_calls"], 3)
         self.assertEqual(model.messages, state["messages"])
+
+    def test_should_write_routes_auto_write_decision_to_write_node(self) -> None:
+        state = initial_triage_state()
+        state["gate_decision"] = {"status": "auto_write"}
+
+        self.assertEqual(should_write(state), WRITE_NODE)
+
+    def test_should_write_routes_escalation_to_end(self) -> None:
+        state = initial_triage_state()
+        state["gate_decision"] = {"status": "escalate"}
+
+        self.assertEqual(should_write(state), END_NODE)
+
+    def test_write_node_waits_for_human_approval_without_state_changes(self) -> None:
+        self.assertEqual(write_node(initial_triage_state()), {})
 
 class FakeMessage:
     def __init__(

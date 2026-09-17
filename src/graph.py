@@ -13,9 +13,12 @@ from src.state import TriageState, TriageStateUpdate
 SUPERVISOR_NODE = "supervisor"
 TOOL_NODE = "tool_node"
 GATE_NODE = "gate"
+WRITE_NODE = "write"
 END_NODE = "__end__"
+INTERRUPT_BEFORE_NODES = (WRITE_NODE,)
 
 GraphRoute = Literal["tool_node", "gate"]
+GateRoute = Literal["write", "__end__"]
 
 
 class ChatModel(Protocol):
@@ -59,6 +62,19 @@ def gate_node(state: TriageState, settings: Settings) -> TriageStateUpdate:
     return gate_state(state, settings)
 
 
+def should_write(state: TriageState) -> GateRoute:
+    """Route approved diagnoses to the write interruption node."""
+    decision = state.get("gate_decision")
+    if not isinstance(decision, dict):
+        return END_NODE
+    return WRITE_NODE if decision.get("status") == "auto_write" else END_NODE
+
+
+def write_node(state: TriageState) -> TriageStateUpdate:
+    """Return no changes after human approval resumes the write path."""
+    return {}
+
+
 def build_triage_graph(
     model: ChatModel,
     tools: Sequence[Any],
@@ -79,6 +95,7 @@ def build_triage_graph(
     graph.add_node(SUPERVISOR_NODE, partial(supervisor_node, model=model))
     graph.add_node(TOOL_NODE, ToolNode(list(tools)))
     graph.add_node(GATE_NODE, partial(gate_node, settings=settings))
+    graph.add_node(WRITE_NODE, write_node)
     graph.set_entry_point(SUPERVISOR_NODE)
     graph.add_conditional_edges(
         SUPERVISOR_NODE,
@@ -89,8 +106,19 @@ def build_triage_graph(
         },
     )
     graph.add_edge(TOOL_NODE, SUPERVISOR_NODE)
-    graph.add_edge(GATE_NODE, END)
-    return graph.compile(checkpointer=checkpointer)
+    graph.add_conditional_edges(
+        GATE_NODE,
+        should_write,
+        {
+            WRITE_NODE: WRITE_NODE,
+            END_NODE: END,
+        },
+    )
+    graph.add_edge(WRITE_NODE, END)
+    return graph.compile(
+        checkpointer=checkpointer,
+        interrupt_before=list(INTERRUPT_BEFORE_NODES),
+    )
 
 
 def require_graph_dependency() -> None:

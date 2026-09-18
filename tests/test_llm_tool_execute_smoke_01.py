@@ -5,10 +5,12 @@ import unittest
 
 from scripts.llm_smoke_test_01 import FirstToolCall
 from scripts.llm_tool_execute_smoke_01 import (
+    dependency_target_names,
     execute_tool_call,
     full_loop_prompt,
     result_preview,
     tool_result_attributes,
+    update_investigation_state,
 )
 
 
@@ -65,6 +67,32 @@ class LLMToolExecuteSmoke01Tests(unittest.TestCase):
 
         self.assertLess(len(preview), 1300)
         self.assertTrue(preview.endswith("...[truncated]"))
+
+    def test_dependency_targets_are_tracked_until_log_inspection(self) -> None:
+        dependency_targets: set[str] = set()
+        inspected_log_services: set[str] = set()
+        dependency_result = {
+            "dependencies": [
+                {"target": {"name": "auth-service"}},
+                {"target": {"name": "postgres-main"}},
+            ]
+        }
+
+        update_investigation_state(
+            FirstToolCall("get_ci_dependencies", {"name_or_id": "payment-api"}),
+            dependency_result,
+            dependency_targets,
+            inspected_log_services,
+        )
+        update_investigation_state(
+            FirstToolCall("search_logs", {"service": "auth-service"}),
+            {"logs": []},
+            dependency_targets,
+            inspected_log_services,
+        )
+
+        self.assertEqual(dependency_target_names(dependency_result), {"auth-service", "postgres-main"})
+        self.assertEqual(dependency_targets - inspected_log_services, {"postgres-main"})
 
 
 class FakeObservabilityTools:

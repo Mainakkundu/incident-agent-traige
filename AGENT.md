@@ -92,7 +92,7 @@ how to work, and what is done.
 ### 4 — Observability ⬜
 
 - [x] 4.1 `tracing.py` — Phoenix + OpenInference
-- [ ] 4.2 span attrs incl. `retrieval_style`, `hypothesis_at_this_step`
+- [x] 4.2 span attrs incl. `retrieval_style`, `hypothesis_at_this_step`
 - [ ] 4.3 `GET /runs/{id}` audit trail
 
 ### 5 — API + trigger ⬜
@@ -124,4 +124,4 @@ how to work, and what is done.
 
 ---
 
-**Next: 4.2 span attrs incl. `retrieval_style`, `hypothesis_at_this_step`.**
+**Next: 4.3 `GET /runs/{id}` audit trail.**

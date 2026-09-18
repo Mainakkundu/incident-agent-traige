@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, Mapping, Protocol
 
 from opentelemetry import trace
 from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
@@ -69,6 +69,14 @@ def shutdown_tracing(handle: TracingHandle) -> None:
 def get_tracer(name: str) -> Any:
     """Return one OpenTelemetry tracer."""
     return trace.get_tracer(name)
+
+
+def set_span_attributes(span: Any, attributes: Mapping[str, Any]) -> None:
+    """Set supported OpenTelemetry span attributes."""
+    for name, value in attributes.items():
+        if value is None:
+            continue
+        span.set_attribute(name, value)
 
 
 def require_tracing_settings(settings: Settings) -> None:

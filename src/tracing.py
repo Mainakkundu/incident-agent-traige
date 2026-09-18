@@ -12,7 +12,7 @@ from phoenix.otel import register
 from src.config import Settings
 
 
-PHOENIX_PROTOCOL = "grpc"
+PHOENIX_PROTOCOL = "http/protobuf"
 DEFAULT_BATCH_EXPORT = False
 DEFAULT_AUTO_INSTRUMENT = False
 

@@ -16,7 +16,7 @@ class TracingTests(unittest.TestCase):
         self.assertEqual(handle.endpoint, "http://localhost:4317")
         self.assertEqual(recorder.kwargs["project_name"], handle.project_name)
         self.assertEqual(recorder.kwargs["endpoint"], handle.endpoint)
-        self.assertEqual(recorder.kwargs["protocol"], "grpc")
+        self.assertEqual(recorder.kwargs["protocol"], "http/protobuf")
         self.assertFalse(recorder.kwargs["batch"])
         self.assertFalse(recorder.kwargs["auto_instrument"])
         self.assertFalse(recorder.kwargs["verbose"])

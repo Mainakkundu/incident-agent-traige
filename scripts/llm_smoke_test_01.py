@@ -70,7 +70,7 @@ def create_traced_first_tool_call(settings: Settings) -> FirstToolCall:
         return tool_call
 
 
-def create_first_tool_completion(settings: Settings) -> Any:
+def create_first_tool_completion(settings: Settings, prompt: str | None = None) -> Any:
     """Create one Groq completion with tool choice enabled."""
     client = Groq(
         api_key=settings.groq_api_key,
@@ -78,7 +78,7 @@ def create_first_tool_completion(settings: Settings) -> Any:
         timeout=settings.http_timeout_seconds,
     )
     return client.chat.completions.create(
-        messages=message_payload(),
+        messages=message_payload(prompt),
         model=settings.groq_model,
         tools=tool_schemas(),
         tool_choice="auto",
@@ -87,9 +87,9 @@ def create_first_tool_completion(settings: Settings) -> Any:
     )
 
 
-def message_payload() -> list[dict[str, str]]:
+def message_payload(prompt: str | None = None) -> list[dict[str, str]]:
     """Return the gld_001 prompt as a chat payload."""
-    return [{"role": "user", "content": gld001_prompt()}]
+    return [{"role": "user", "content": prompt or gld001_prompt()}]
 
 
 def tool_schemas() -> list[dict[str, Any]]:

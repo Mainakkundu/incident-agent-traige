@@ -6,10 +6,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from groq import Groq
-from opentelemetry import trace
-from phoenix.otel import register
 
 from src.config import Settings, load_settings
+from src.tracing import configure_tracing, get_tracer, shutdown_tracing
 
 
 SMOKE_PROMPT = (
@@ -36,16 +35,11 @@ class GroqSmokeResult:
 def run_smoke(settings: Settings) -> GroqSmokeResult:
     """Run one traced Groq completion."""
     require_groq_api_key(settings)
-    tracer_provider = register(
-        project_name=settings.phoenix_project_name,
-        endpoint=settings.otel_exporter_otlp_endpoint,
-        protocol="grpc",
-        batch=False,
-    )
+    tracing_handle = configure_tracing(settings)
     try:
         return create_traced_completion(settings)
     finally:
-        tracer_provider.shutdown()
+        shutdown_tracing(tracing_handle)
 
 
 def require_groq_api_key(settings: Settings) -> None:
@@ -62,7 +56,7 @@ def create_traced_completion(settings: Settings) -> GroqSmokeResult:
         base_url=groq_sdk_base_url(settings.groq_base_url),
         timeout=settings.http_timeout_seconds,
     )
-    tracer = trace.get_tracer(__name__)
+    tracer = get_tracer(__name__)
     with tracer.start_as_current_span(SPAN_NAME) as span:
         span.set_attribute("llm.system", LLM_SYSTEM)
         span.set_attribute("llm.model_name", settings.groq_model)

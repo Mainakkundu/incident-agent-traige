@@ -428,6 +428,43 @@ Run in order. Do not skip ahead when one fails.
 
 **Step 6 is the one people skip and regret.** A broken tool looks exactly like a bad agent, and you'll spend two hours tuning a prompt to fix a SQL bug.
 
+Current local smoke commands:
+
+```bash
+.venv/bin/python scripts/run_gld_001.py
+.venv/bin/python scripts/llm_tool_execute_smoke_01.py
+```
+
+`scripts/run_gld_001.py` is the deterministic wiring check. It proves graph,
+tool execution, gate and tracing can reach the golden answer.
+
+`scripts/llm_tool_execute_smoke_01.py` is the real LLM loop check. It lets the
+model choose read tools, executes each selected tool with the selected
+arguments, feeds tool results back into the next model call, and stops only when
+the model returns final JSON. The verified gld_001 run reaches:
+
+```json
+{
+  "root_cause": "postgres-main connection exhaustion",
+  "impacted_service": "payment-api",
+  "next_action": "update_ticket"
+}
+```
+
+In Phoenix, the LLM loop appears as:
+
+```text
+incident.llm_tool_execute_smoke_01.run
+  tool.1.search_logs
+  tool.2.get_ci_dependencies
+  tool.3.get_ci_dependencies
+  tool.4.search_logs
+  tool.5.search_logs
+```
+
+The run span carries `output.value`; each tool span carries `tool.args`,
+`tool.result_count`, and `tool.result.preview`.
+
 ### 8.2 Chaos suite — break it for real
 
 Don't inject fake data. Kill actual services.

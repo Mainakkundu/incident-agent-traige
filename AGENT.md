@@ -36,8 +36,8 @@ how to work, and what is done.
 0 Infra          ██████  done
 1 Data           ██████  done
 2 Tools          ██████  done
-3 Agent          ░░░░░░  ← here
-4 Observability  ░░░░░░
+3 Agent          ██████  done
+4 Observability  ██░░░░  ← here
 5 API + trigger  ░░░░░░
 6 Evaluation     ░░░░░░
 7 Chaos          ░░░░░░
@@ -88,11 +88,18 @@ how to work, and what is done.
 - [x] 3.4 `gate.py` — confidence, token issuance, escalation
 - [x] 3.5 HITL via `interrupt_before`
 - [x] 3.6 gld_001 end to end
+      - deterministic runner: `scripts/run_gld_001.py`
+      - LLM loop runner: `scripts/llm_tool_execute_smoke_01.py`
+      - verified path: LLM chooses tools, tools execute, outputs feed back, final
+        answer reaches `postgres-main` root cause
 
 ### 4 — Observability ⬜
 
 - [x] 4.1 `tracing.py` — Phoenix + OpenInference
 - [x] 4.2 span attrs incl. `retrieval_style`, `hypothesis_at_this_step`
+      - Phoenix local endpoint uses HTTP/protobuf:
+        `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:6006/v1/traces`
+      - full LLM loop trace root: `incident.llm_tool_execute_smoke_01.run`
 - [ ] 4.3 `GET /runs/{id}` audit trail
 
 ### 5 — API + trigger ⬜

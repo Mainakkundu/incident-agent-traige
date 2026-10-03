@@ -72,14 +72,17 @@ def run_gld001(settings: Settings | None = None) -> Gld001Result:
     return result
 
 
-def run_traced_gld001(settings: Settings | None = None) -> Gld001Result:
+def run_traced_gld001(
+    settings: Settings | None = None,
+    run_id: str = GLD001_THREAD_ID,
+) -> Gld001Result:
     """Run gld_001 with Phoenix tracing enabled."""
     effective_settings = settings or load_settings()
     tracing_handle = configure_tracing(effective_settings)
     tracer = get_tracer(TRACER_NAME)
     try:
         with tracer.start_as_current_span(RUN_SPAN_NAME) as span:
-            set_span_attributes(span, gld001_run_attributes())
+            set_span_attributes(span, gld001_run_attributes(run_id))
             result = run_gld001(effective_settings)
             set_span_attributes(span, gld001_result_attributes(result))
             return result
@@ -307,9 +310,10 @@ def gld001_diagnosis_payload() -> dict[str, Any]:
     }
 
 
-def gld001_run_attributes() -> dict[str, Any]:
+def gld001_run_attributes(run_id: str = GLD001_THREAD_ID) -> dict[str, Any]:
     """Return trace attributes for the gld_001 run."""
     return {
+        "incident.run_id": run_id,
         "incident.golden_id": GLD001_ID,
         "incident.ticket_id": GLD001_TICKET_ID,
         "incident.alerted_service": GLD001_SERVICE,
@@ -322,6 +326,7 @@ def gld001_run_attributes() -> dict[str, Any]:
 def gld001_result_attributes(result: Gld001Result) -> dict[str, Any]:
     """Return trace attributes for the gld_001 result."""
     return {
+        "output.value": json.dumps(asdict(result), sort_keys=True, default=str),
         "incident.root_cause": result.root_cause,
         "incident.causal_chain": " -> ".join(result.causal_chain),
         "incident.confidence": result.confidence,
@@ -345,6 +350,7 @@ def tool_result_attributes(result: dict[str, Any]) -> dict[str, Any]:
     return {
         "retrieval_style": result.get("retrieval_style", UNKNOWN_RETRIEVAL_STYLE),
         "tool.result_count": tool_result_count(result),
+        "tool.result.preview": json.dumps(result, sort_keys=True, default=str),
     }
 
 

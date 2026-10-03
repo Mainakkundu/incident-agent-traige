@@ -1,4 +1,6 @@
 arize-phoenix-otel
+arize-phoenix-client
+fastapi
 groq
 httpx
 langchain-core

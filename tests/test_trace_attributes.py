@@ -67,7 +67,9 @@ class TraceAttributeTests(unittest.TestCase):
         )
 
         self.assertEqual(run_attrs["incident.golden_id"], "gld_001")
+        self.assertEqual(run_attrs["incident.run_id"], "gld-001")
         self.assertEqual(result_attrs["incident.root_cause"], "postgres-main")
+        self.assertIn("output.value", result_attrs)
         self.assertEqual(
             result_attrs["incident.causal_chain"],
             "postgres-main -> auth-service -> payment-api",

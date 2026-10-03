@@ -1,0 +1,69 @@
+%%{init: {
+  "securityLevel": "loose",
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Inter, Arial, sans-serif",
+    "fontSize": "19px",
+    "primaryTextColor": "#172033",
+    "lineColor": "#526178",
+    "clusterBkg": "#FFFCF5",
+    "clusterBorder": "#B87918",
+    "edgeLabelBackground": "#FFFFFF"
+  },
+  "flowchart": {
+    "curve": "basis",
+    "nodeSpacing": 48,
+    "rankSpacing": 70,
+    "htmlLabels": true
+  }
+}}%%
+flowchart LR
+    ALERT["<b>Alertmanager</b><br/>payment-api errors: 12%"]
+    API["<b>Incident API</b><br/>authenticate · deduplicate<br/>return run_id"]
+
+    subgraph HARNESS["INCIDENT TRIAGE AGENT · AGENTIC AI ENGINEERING HARNESS<br/><small>Deterministic controls around one agentic decision</small>"]
+        direction LR
+        STATE["<b>Context + state</b><br/>alert · checkpoint<br/>evidence collected"]
+        SUP["<b>Supervisor</b><br/><i>What should I<br/>inspect next?</i><br/><small>only agentic component</small>"]
+        MCP["<b>Typed MCP tools</b><br/>logs · deploys · metrics<br/>CMDB · history · runbooks"]
+        GATE{"<b>Policy gate</b><br/>evidence sufficient?<br/>confidence ≥ 0.80?<br/>step cap ≤ 15?"}
+        CTRL["<b>Harness controls</b><br/>schemas · timeouts · limits<br/>HITL · eval hooks · tracing"]
+
+        STATE --> SUP
+        SUP <-->|"read action / structured evidence"| MCP
+        SUP -->|"diagnosis"| GATE
+        CTRL -. "constrains" .-> SUP
+        CTRL -. "governs" .-> MCP
+        CTRL -. "enforces" .-> GATE
+    end
+
+    PG[("<b>Postgres + pgvector</b><br/>logs · deploys · metrics<br/>incidents · runbooks")]
+    GLPI["<img src='https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/glpi.webp' width='78'/><br/><b>GLPI</b><br/>tickets + CMDB graph"]
+    HUMAN["<b>On-call engineer</b><br/>review uncertain diagnosis"]
+    PHOENIX["<img src='https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/arize-phoenix.png' width='82'/><br/><b>Arize Phoenix</b><br/>trace + audit trail<br/>GET /runs/{id}"]
+
+    ALERT --> API --> STATE
+    MCP <-->|"full-text + vector"| PG
+    MCP <-->|"ticket + graph reads"| GLPI
+    GATE -->|"approved write"| GLPI
+    GATE -->|"uncertain / cap hit"| HUMAN
+    HARNESS -. "run, model, tool and gate spans" .-> PHOENIX
+
+    classDef input fill:#E8F0FE,stroke:#3B63B8,color:#172033,stroke-width:2px;
+    classDef agent fill:#FFF0CF,stroke:#B87918,color:#3D2A0A,stroke-width:3px;
+    classDef control fill:#FFF8E8,stroke:#9B6A1D,color:#3D2A0A,stroke-width:2px;
+    classDef tool fill:#E9F7EF,stroke:#2E7D52,color:#153923,stroke-width:2px;
+    classDef gate fill:#FDECEF,stroke:#A74A5D,color:#451E27,stroke-width:2px;
+    classDef data fill:#F2ECFA,stroke:#7154A3,color:#2C2140,stroke-width:2px;
+    classDef output fill:#E7F6F4,stroke:#277C74,color:#153D39,stroke-width:2px;
+    classDef audit fill:#EAF7FB,stroke:#217A94,color:#153D49,stroke-width:2px;
+
+    class ALERT,API input;
+    class STATE,CTRL control;
+    class SUP agent;
+    class MCP tool;
+    class GATE gate;
+    class PG,GLPI data;
+    class HUMAN output;
+    class PHOENIX audit;
+    style HARNESS fill:#FFFCF5,stroke:#B87918,stroke-width:3px,stroke-dasharray:10 7

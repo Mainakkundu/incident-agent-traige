@@ -37,8 +37,8 @@ how to work, and what is done.
 1 Data           ██████  done
 2 Tools          ██████  done
 3 Agent          ██████  done
-4 Observability  ██░░░░  ← here
-5 API + trigger  ░░░░░░
+4 Observability  ██████  done
+5 API + trigger  ██░░░░  ← here
 6 Evaluation     ░░░░░░
 7 Chaos          ░░░░░░
 8 Ship           ░░░░░░
@@ -100,7 +100,10 @@ how to work, and what is done.
       - Phoenix local endpoint uses HTTP/protobuf:
         `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:6006/v1/traces`
       - full LLM loop trace root: `incident.llm_tool_execute_smoke_01.run`
-- [ ] 4.3 `GET /runs/{id}` audit trail
+- [x] 4.3 `GET /runs/{id}` audit trail
+      - Phoenix-backed reconstruction by stable `incident.run_id`
+      - returns tool arguments/results, hypotheses, services, diagnosis and gate status
+      - verified against a persisted Phoenix trace after process restart
 
 ### 5 — API + trigger ⬜
 
@@ -131,4 +134,4 @@ how to work, and what is done.
 
 ---
 
-**Next: 4.3 `GET /runs/{id}` audit trail.**
+**Next: 5.1 complete the 3-endpoint API; 202 + run_id, idempotency on alert fingerprint.**

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, is_dataclass
 from datetime import datetime, timedelta
 from typing import Any, Sequence
 
@@ -122,6 +122,8 @@ def serialize_dataclass_rows(rows: Sequence[object]) -> list[dict[str, Any]]:
 
 def serialize_dataclass(row: object) -> dict[str, Any]:
     """Serialize one dataclass row for MCP responses."""
+    if not is_dataclass(row) or isinstance(row, type):
+        raise TypeError("row must be a dataclass instance")
     raw = asdict(row)
     return {key: serialize_value(value) for key, value in raw.items()}
 

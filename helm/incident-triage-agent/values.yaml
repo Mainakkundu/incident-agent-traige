@@ -1,0 +1,45 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/mainakkundu/incident-agent-traige
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  host: incident-triage.example.com
+  annotations: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 2Gi
+
+config:
+  appEnv: production
+  glpiUrl: http://glpi/api.php/v1
+  postgresDsn: postgresql://agent:agent@pgvector:5432/incidents
+  phoenixEndpoint: http://phoenix:6006
+  otelExporterEndpoint: http://phoenix:6006/v1/traces
+  groqBaseUrl: https://api.groq.com
+  groqModel: openai/gpt-oss-20b
+
+secrets:
+  glpiAppToken: ""
+  glpiUserToken: ""
+  groqApiKey: ""

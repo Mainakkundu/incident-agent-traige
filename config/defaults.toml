@@ -12,11 +12,11 @@ list_page_size = 1000
 dsn = "postgresql://agent:agent@localhost:5432/incidents"
 
 [phoenix]
-endpoint = "http://localhost:6006"
+endpoint = "http://127.0.0.1:6006"
 project_name = "incident-triage-agent-groq-smoke"
 
 [otel]
-exporter_otlp_endpoint = "http://localhost:4317"
+exporter_otlp_endpoint = "http://127.0.0.1:6006/v1/traces"
 
 [groq]
 base_url = "https://api.groq.com"

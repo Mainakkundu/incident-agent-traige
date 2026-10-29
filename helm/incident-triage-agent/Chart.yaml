@@ -1,0 +1,6 @@
+apiVersion: v2
+name: incident-triage-agent
+description: Evidence-driven incident triage API with a bounded LangGraph supervisor
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

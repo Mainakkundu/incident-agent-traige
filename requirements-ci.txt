@@ -1,0 +1,7 @@
+-r requirements-api.txt
+groq
+mcp[cli]
+mypy
+pytest
+PyYAML
+ruff

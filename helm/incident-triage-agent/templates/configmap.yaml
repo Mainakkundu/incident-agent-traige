@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "incident-triage-agent.fullname" . }}
+  labels:
+    {{- include "incident-triage-agent.labels" . | nindent 4 }}
+data:
+  APP_ENV: {{ .Values.config.appEnv | quote }}
+  GLPI_URL: {{ .Values.config.glpiUrl | quote }}
+  DB_DSN: {{ .Values.config.postgresDsn | quote }}
+  PHOENIX_ENDPOINT: {{ .Values.config.phoenixEndpoint | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.config.otelExporterEndpoint | quote }}
+  GROQ_BASE_URL: {{ .Values.config.groqBaseUrl | quote }}
+  GROQ_MODEL: {{ .Values.config.groqModel | quote }}

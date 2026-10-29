@@ -97,9 +97,11 @@ time window is not evidence for the current incident.
 | Single supervisor, hard cap, checkpointing, and confidence gate | Implemented |
 | Human-review interrupt and guarded ticket writes | Implemented |
 | OpenTelemetry attributes and `GET /runs/{id}` audit reconstruction | Implemented |
-| Webhook, durable queue, idempotency, and approval API | Next phase |
-| Automated evaluation, chaos suite, CI, and deployment | Planned |
+| Webhook, in-process dispatch, idempotency, and approval API | Implemented |
+| Automated evaluation and deterministic chaos suite | Implemented |
+| Docker, GitHub Actions, Render Blueprint, and Helm | Implemented |
+| Durable queue, run ledger, and persistent checkpointer | Production follow-up |
 
-The current suite has 106 passing tests. The architecture is intentionally
+The current suite has 123 passing tests. The architecture is intentionally
 bounded: one agentic decision path, deterministic integrations, and explicit
 human authority over uncertain or consequential actions.

@@ -5,10 +5,7 @@ from __future__ import annotations
 import operator
 from typing import Annotated, Any, Sequence, TypedDict
 
-try:
-    from langchain_core.messages import AnyMessage
-except ImportError:
-    AnyMessage = Any
+from langchain_core.messages import AnyMessage
 
 
 class TriageState(TypedDict):

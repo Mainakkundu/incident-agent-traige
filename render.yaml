@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: incident-triage-agent
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: GLPI_URL
+        sync: false
+      - key: GLPI_APP_TOKEN
+        sync: false
+      - key: GLPI_USER_TOKEN
+        sync: false
+      - key: DB_DSN
+        sync: false
+      - key: PHOENIX_ENDPOINT
+        sync: false
+      - key: OTEL_EXPORTER_OTLP_ENDPOINT
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

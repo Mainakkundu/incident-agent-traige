@@ -38,10 +38,10 @@ how to work, and what is done.
 2 Tools          ██████  done
 3 Agent          ██████  done
 4 Observability  ██████  done
-5 API + trigger  ██░░░░  ← here
-6 Evaluation     ░░░░░░
-7 Chaos          ░░░░░░
-8 Ship           ░░░░░░
+5 API + trigger  ██████  done
+6 Evaluation     ██████  done
+7 Chaos          ██████  done
+8 Ship           ██████  done
 ```
 
 ### 0 — Infra ✅
@@ -107,31 +107,35 @@ how to work, and what is done.
 
 ### 5 — API + trigger ⬜
 
-- [ ] 5.1 3 endpoints; 202 + run_id, idempotency on alert fingerprint
-- [ ] 5.2 toy services: payment-api, auth-service, traffic-gen
-- [ ] 5.3 Prometheus + Alertmanager → webhook
+- [x] 5.1 3 endpoints; 202 + run_id, idempotency on alert fingerprint
+- [x] 5.2 toy services: payment-api, auth-service, traffic-gen
+- [x] 5.3 Prometheus + Alertmanager → webhook
+      - live verification: injected auth fault → Prometheus `HighErrorRate` →
+        Alertmanager → `202 Accepted` → run `8e708dd3-99a9-4fe0-9b60-9ca4bf106df0`
+      - audit reconstruction: `postgres-main`, five tool steps, `auto_write`
 
 ### 6 — Evaluation ⬜
 
-- [ ] 6.1 E1, E2, E4, E6 — code-based
-- [ ] 6.2 E3 causal validity assertion
-- [ ] 6.3 judge + TPR/TNR every run
-- [ ] 6.4 `REPORT.md` with deltas vs baseline
-- [ ] 6.5 two hard gates in CI
+- [x] 6.1 E1, E2, E4, E6 — code-based
+- [x] 6.2 E3 causal validity assertion
+- [x] 6.3 judge + TPR/TNR every run
+- [x] 6.4 `REPORT.md` with deltas vs baseline
+- [x] 6.5 two hard gates implemented as pytest gates, ready for Phase 8 CI
 
 ### 7 — Chaos ⬜
 
-- [ ] 7.1 6 scripts incl. one where nothing is wrong
-- [ ] 7.2 `make chaos-suite` — 6 rows, 6 passes
+- [x] 7.1 6 deterministic fault scripts incl. one where nothing is wrong
+- [x] 7.2 `make chaos-suite` — 6 rows, 6 passes
 
-### 8 — Ship ⬜
+### 8 — Ship ✅
 
-- [ ] 8.1 Dockerfile
-- [ ] 8.2 CI
-- [ ] 8.3 Helm
-- [ ] 8.4 Render
-- [ ] 8.5 README — measured numbers, §4.1 decision, limitations
+- [x] 8.1 Dockerfile — non-root runtime, health check, API-only dependencies
+- [x] 8.2 CI — lint, types, tests, eval gates, chaos, GHCR image
+- [x] 8.3 Helm — probes, resources, secrets, ingress and optional autoscaling
+- [x] 8.4 Render — Docker Blueprint with managed secrets and health check
+- [x] 8.5 README — measured numbers, §4.1 decision, limitations
 
 ---
 
-**Next: 5.1 complete the 3-endpoint API; 202 + run_id, idempotency on alert fingerprint.**
+**All planned phases are implemented. The remaining production follow-up is a
+durable queue, run ledger and LangGraph checkpointer.**

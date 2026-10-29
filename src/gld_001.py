@@ -12,7 +12,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 
 from src.clients.glpi import GLPIClient
 from src.clients.logstore import LogStoreClient
-from src.config import Settings, load_settings
+from src.config import LogLevel, Settings, load_settings
 from src.graph import build_triage_graph
 from src.mcp.itsm import ITSMTools
 from src.mcp.observability import ObservabilityTools
@@ -177,7 +177,7 @@ class Gld001TracedTools:
         service: str,
         window_start: str,
         window_end: str,
-        level: str | None = None,
+        level: LogLevel | None = None,
         keyword: str | None = None,
         limit: int | None = None,
     ) -> dict[str, Any]:
@@ -390,7 +390,10 @@ def tool_result_count(result: dict[str, Any]) -> int:
 
 def result_from_state(state: TriageState) -> Gld001Result:
     """Return a typed gld_001 result from graph state."""
-    diagnosis = json.loads(last_ai_message(state["messages"]).content)
+    content = last_ai_message(state["messages"]).content
+    if not isinstance(content, str):
+        raise ValueError("gld_001 final diagnosis must be JSON text")
+    diagnosis = json.loads(content)
     gate_decision = state["gate_decision"] or {}
     return Gld001Result(
         root_cause=str(diagnosis["root_cause"]),

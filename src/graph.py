@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
+from importlib.util import find_spec
 from typing import Any, Literal, Protocol, Sequence
 
 from src.config import Settings
@@ -41,10 +42,10 @@ def supervisor_node(state: TriageState, model: ChatModel) -> TriageStateUpdate:
 def should_continue(state: TriageState, settings: Settings) -> GraphRoute:
     """Route to tools when requested, otherwise route to the gate."""
     if state["llm_calls"] >= settings.agent_max_steps:
-        return GATE_NODE
+        return "gate"
     if not state["messages"]:
-        return GATE_NODE
-    return TOOL_NODE if message_has_tool_calls(state["messages"][-1]) else GATE_NODE
+        return "gate"
+    return "tool_node" if message_has_tool_calls(state["messages"][-1]) else "gate"
 
 
 def message_has_tool_calls(message: Any) -> bool:
@@ -66,8 +67,8 @@ def should_write(state: TriageState) -> GateRoute:
     """Route approved diagnoses to the write interruption node."""
     decision = state.get("gate_decision")
     if not isinstance(decision, dict):
-        return END_NODE
-    return WRITE_NODE if decision.get("status") == "auto_write" else END_NODE
+        return "__end__"
+    return "write" if decision.get("status") == "auto_write" else "__end__"
 
 
 def write_node(state: TriageState) -> TriageStateUpdate:
@@ -123,12 +124,9 @@ def build_triage_graph(
 
 def require_graph_dependency() -> None:
     """Require LangGraph only when compiling the graph."""
-    try:
-        import langgraph.graph
-        import langgraph.prebuilt
-    except ImportError as exc:
+    if find_spec("langgraph.graph") is None or find_spec("langgraph.prebuilt") is None:
         msg = "langgraph is required to compile the triage graph"
-        raise ImportError(msg) from exc
+        raise ImportError(msg)
 
 
 def require_tools(tools: Sequence[Any]) -> None:

@@ -57,6 +57,68 @@ services:
       - "6006:6006"
       - "4317:4317"
 
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: ["uvicorn", "services.auth_service:create_app", "--factory", "--host", "0.0.0.0", "--port", "9002"]
+    ports:
+      - "9002:9002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9002/health')"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+
+  payment-api:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: ["uvicorn", "services.payment_api:create_app", "--factory", "--host", "0.0.0.0", "--port", "9001"]
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:9002
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    ports:
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9001/health')"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+
+  traffic-gen:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: ["uvicorn", "services.traffic_gen:create_app", "--factory", "--host", "0.0.0.0", "--port", "9003"]
+    environment:
+      PAYMENT_API_URL: http://payment-api:9001
+    depends_on:
+      payment-api:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules.yml:/etc/prometheus/rules.yml:ro
+    depends_on:
+      payment-api:
+        condition: service_healthy
+    ports:
+      - "9090:9090"
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    command: ["--config.file=/etc/alertmanager/alertmanager.yml"]
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+
 volumes:
   db_data:
   glpi_data:

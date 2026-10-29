@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Protocol, Sequence
+from typing import Any, Protocol, Sequence, cast
 
 
 class SentenceTransformerLike(Protocol):
@@ -49,4 +49,4 @@ def create_sentence_transformer(model_name: str) -> SentenceTransformerLike:
     except ImportError as exc:
         msg = "Install sentence-transformers with: pip install sentence-transformers"
         raise RuntimeError(msg) from exc
-    return SentenceTransformer(model_name)
+    return cast(SentenceTransformerLike, SentenceTransformer(model_name))

@@ -8,3 +8,4 @@ langgraph
 mcp[cli]
 psycopg[binary]
 sentence-transformers
+uvicorn

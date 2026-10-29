@@ -1,0 +1,8 @@
+arize-phoenix-otel
+arize-phoenix-client
+fastapi
+httpx
+langchain-core
+langgraph
+psycopg[binary]
+uvicorn

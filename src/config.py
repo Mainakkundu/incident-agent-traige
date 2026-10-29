@@ -6,7 +6,7 @@ import os
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 
 Environment = Literal["local", "test", "production"]
@@ -138,7 +138,7 @@ def get_environment(default: str, env_file_values: dict[str, str]) -> Environmen
     if value not in ("local", "test", "production"):
         msg = "APP_ENV must be one of: local, test, production"
         raise ValueError(msg)
-    return value
+    return cast(Environment, value)
 
 
 def load_settings(

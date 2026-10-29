@@ -1,0 +1,17 @@
+groups:
+  - name: toy-services
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(toy_http_requests_total{service="payment-api",status="error"}[30s]))
+          /
+          clamp_min(sum(rate(toy_http_requests_total{service="payment-api"}[30s])), 0.001)
+          > 0.20
+        for: 10s
+        labels:
+          severity: critical
+          service: payment-api
+        annotations:
+          value: "above 20%"
+          baseline: "below 1%"
+          summary: "payment-api error rate is elevated"

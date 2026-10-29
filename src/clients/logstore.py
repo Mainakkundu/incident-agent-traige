@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Callable, Protocol, Sequence
+from typing import Any, Callable, Protocol, Sequence, cast
 
 import psycopg
 
@@ -338,7 +338,7 @@ def to_log_level(value: Any) -> LogLevel:
     if text not in ("DEBUG", "INFO", "WARN", "ERROR"):
         msg = f"Unknown log level: {text}"
         raise LogStoreClientError(msg)
-    return text
+    return cast(LogLevel, text)
 
 
 def optional_string(value: Any) -> str | None:

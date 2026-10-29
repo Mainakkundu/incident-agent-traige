@@ -1,0 +1,11 @@
+route:
+  receiver: incident-agent
+  group_wait: 1s
+  group_interval: 10s
+  repeat_interval: 1h
+
+receivers:
+  - name: incident-agent
+    webhook_configs:
+      - url: http://host.docker.internal:8000/webhooks/incident
+        send_resolved: false
